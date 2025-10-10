@@ -169,13 +169,13 @@ bin/main.cpp.o: src/main.cpp include/main.h include/api.h \
  include/liblvgl/core/../others/sysmon/../../others/observer/../../core/lv_obj_event.h \
  include/liblvgl/core/../others/sysmon/../../others/observer/../../core/../misc/lv_event.h \
  include/liblvgl/core/../others/sysmon/../../others/observer/../../core/../indev/lv_indev.h \
- c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/core/lv_group.h \
- c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/lv_conf_internal.h \
- c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_types.h \
- c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_ll.h \
- c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_area.h \
- c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_timer.h \
- c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_event.h \
+ C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/core/lv_group.h \
+ C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/lv_conf_internal.h \
+ C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_types.h \
+ C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_ll.h \
+ C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_area.h \
+ C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_timer.h \
+ C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_event.h \
  include/liblvgl/core/../others/sysmon/../../others/observer/../../core/lv_group.h \
  include/liblvgl/core/../stdlib/builtin/lv_tlsf.h \
  include/liblvgl/core/../stdlib/builtin/../../lv_conf_internal.h \
@@ -849,13 +849,13 @@ include/liblvgl/core/../others/sysmon/../../others/observer/../../core/lv_obj_pr
 include/liblvgl/core/../others/sysmon/../../others/observer/../../core/lv_obj_event.h:
 include/liblvgl/core/../others/sysmon/../../others/observer/../../core/../misc/lv_event.h:
 include/liblvgl/core/../others/sysmon/../../others/observer/../../core/../indev/lv_indev.h:
-c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/core/lv_group.h:
-c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/lv_conf_internal.h:
-c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_types.h:
-c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_ll.h:
-c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_area.h:
-c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_timer.h:
-c:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_event.h:
+C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/core/lv_group.h:
+C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/lv_conf_internal.h:
+C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_types.h:
+C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_ll.h:
+C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_area.h:
+C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_timer.h:
+C:/Users/varun/OneDrive\ -\ Lynfield\ College/Robotics\ 2915M/drive/include/liblvgl/misc/lv_event.h:
 include/liblvgl/core/../others/sysmon/../../others/observer/../../core/lv_group.h:
 include/liblvgl/core/../stdlib/builtin/lv_tlsf.h:
 include/liblvgl/core/../stdlib/builtin/../../lv_conf_internal.h:
