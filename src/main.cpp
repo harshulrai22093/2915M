@@ -11,16 +11,6 @@ pros::IMU inertial ({1});
 //scraper 
 pros::adi::Pneumatics scraper('a', false);
 
-//color sorter piston
-pros::adi::Pneumatics colorSorterPiston('b', false);
-
-//optical for coolor sorting
-pros::Optical optical(1);
-
-// Simple color sorter configuration
-bool allianceColorLearned = false;
-bool isRedAlliance = false; // true for red, false for blue
-
 struct Pose {
     double x;       // cm
     double y;       // cm
@@ -30,7 +20,6 @@ struct Pose {
 Pose robotPose = {0.0, 0.0, 0.0};
 
 void odometryTime();
-void colorSortTask();
 
 // odometry constants 
 constexpr double WHEEL_DIAMETER_IN = 4.0;
@@ -51,17 +40,11 @@ void initialize() {
 	while (inertial.is_calibrating()) {
 		pros::delay(10);
 	}
-	// Configure optical sensor 
-	optical.set_led_pwm(100);      // turn on onboard LED for better readings
-	optical.set_integration_time(25); // ms 
 
-	// start background tasks
 	if (!gOdomTask) {
 		gOdomTask = new pros::Task(odometryTime);
 	}
-	if (!gColorSortTask) {
-		gColorSortTask = new pros::Task(colorSortTask);
-	}
+
 }
 
 //Drive distance with a pid controller
@@ -178,49 +161,6 @@ void turningTime(float targetRotation, float maxSpeed = 127, float errorExit = 1
 	}
 	left_mg.move(0);
 	right_mg.move(0);
-}
-
-// Simple color sorter task
-void colorSortTask() {
-	while (true) {
-		int prox = optical.get_proximity();
-		
-		if (prox > 100) { // ball detected
-			int hue = optical.get_hue();
-			
-			// Learn alliance color from first ball if not learned
-			if (!allianceColorLearned) {
-				if (hue >= 330 || hue <= 30) { // red ball
-					isRedAlliance = true;
-					allianceColorLearned = true;
-					master.print(0, 0, "RED Alliance");
-				} else if (hue >= 200 && hue <= 240) { // blue ball
-					isRedAlliance = false;
-					allianceColorLearned = true;
-					master.print(0, 0, "BLUE Alliance");
-				}
-			}
-			
-			// Sort balls if alliance color is learned
-			if (allianceColorLearned) {
-				bool isRedBall = (hue >= 330 || hue <= 30);
-				bool isBlueBall = (hue >= 200 && hue <= 240);
-				
-				// Reject wrong color balls
-				if ((isRedAlliance && isBlueBall) || (!isRedAlliance && isRedBall)) {
-					colorSorterPiston.set_value(true); // extend to reject
-				} else {
-					colorSorterPiston.set_value(false); // retract to accept
-				}
-			} else {
-				colorSorterPiston.set_value(false); // retract if no alliance set
-			}
-		} else {
-			colorSorterPiston.set_value(false); // retract when no ball
-		}
-		
-		pros::delay(50);
-	}
 }
 
 // odometry
@@ -398,7 +338,7 @@ void opcontrol() {
 			// Simple intake - color sorting handled by background task
 			intakeMotor.move(127);
 			seperateMotor.move(127);
-			testMotor.move(127);
+			
 		}
 		//outtake
 		else if(master.get_digital(DIGITAL_R2))
@@ -411,7 +351,6 @@ void opcontrol() {
 		{
 			intakeMotor.move(0);
 			seperateMotor.move(0);
-			testMotor.move(0);
 		}
 
     	if(master.get_digital_new_press(DIGITAL_Y))
@@ -419,33 +358,13 @@ void opcontrol() {
 			scraper.toggle();
 		}
 
-		// Manual alliance color override
-		if(master.get_digital_new_press(DIGITAL_LEFT))
-		{
-			isRedAlliance = true;
-			allianceColorLearned = true;
-			master.rumble("."); // short rumble to confirm
-			master.print(0, 0, "RED Override");
-		}
-		else if(master.get_digital_new_press(DIGITAL_RIGHT))
-		{
-			isRedAlliance = false;
-			allianceColorLearned = true;
-			master.rumble(".."); // double rumble to confirm
-			master.print(0, 0, "BLUE Override");
-		}
-		else if(master.get_digital_new_press(DIGITAL_DOWN))
-		{
-			allianceColorLearned = false;
-			master.rumble("---"); // long rumble to confirm disabled
-			master.print(0, 0, "Color Reset");
 		}
 
 	pros::delay(10);						// Run for 10 ms then update
 		
 	
 	}
-}
+
 
 
 	
