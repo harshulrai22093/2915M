@@ -214,7 +214,7 @@ void odometryTime() {
 }
 
 // boomerang drive
-void boomerang(double targetX, double targetY, double maxSpeed = 127, double arriveRadius = 2.0) {
+void boomerang(double targetX, double targetY, double maxSpeed = 127) {
     // Tuning constants 
     const double kP_lin = 5.0; //cm   
     const double kP_ang = 2.2; //rad hopefully
@@ -225,7 +225,6 @@ void boomerang(double targetX, double targetY, double maxSpeed = 127, double arr
         double dy = targetY - robotPose.y;
 
         double distance = sqrt(dx*dx + dy*dy);
-        if (distance < arriveRadius) break; // arrival check first to reduce overshoot (im so friggin smart)
 
         double targetTheta = atan2(dy, dx);
 
@@ -253,35 +252,20 @@ void boomerang(double targetX, double targetY, double maxSpeed = 127, double arr
 // Autonomous, runs when auton runs
 void autonomous()
 {
-	// color sort task is already running and will learn alliance color from preload
-	// odometry task now started in initialize()
 
-	// // LEFT SIDE
-	// driveDistance(50, 50, 2);
-	// turningTime(-90, 50, 3);
-	// driveDistance(65, 50, 3);
-
-	// turningTime(0, 50, 3);
-	// driveDistance(30, 50, 13);
-	// intakeMotor.move(127);
-	// seperateMotor.move(127);
-	// testMotor.move(-127);
-	// pros::delay(1500);
-	
-	// driveDistance(-30, 50, 3);
-	// turningTime(45, 50, 3);
-	// pros::delay(300);
-	// intakeMotor.move(127);
-	// seperateMotor.move(127);
-	// testMotor.move(127);
-	// driveDistance(70, 30, 4);
-	// pros::delay(300);
-	// scraper.toggle();
-	// driveDistance(40, 30, 5);
-	// pros::delay(100);
-	// intakeMotor.move(127);
-	// seperateMotor.move(-127);
-	// testMotor.move(-127);
+	// LEFT SIDE
+	intakeMotor.move(-127);
+	seperateMotor.move(127); 
+	driveDistance(70, 50, 2);
+	driveDistance(-20, 100, 2);
+	intakeMotor.move(0);
+	seperateMotor.move(0);
+	turningTime(-90, 127, 2);
+	driveDistance(30, 50, 2);
+	turningTime(-90, 127, 2);
+	driveDistance(-20, 50, 2);
+	intakeMotor.move(127);
+	seperateMotor.move(-127);
 
 	// RIGHT SIDE
 	// driveDistance(50, 50, 2);
@@ -330,20 +314,20 @@ void opcontrol() {
 		//mid goal
 		else if(master.get_digital(DIGITAL_L2))
 		{
-			seperateMotor.move(127);
+			intakeMotor.move(127);
+			seperateMotor.move(-127);
 		}
 		//intake
 		else if(master.get_digital(DIGITAL_R1))
 		{
-			// Simple intake - color sorting handled by background task
-			intakeMotor.move(127);
+			intakeMotor.move(-127);
 			seperateMotor.move(127);
 			
 		}
 		//outtake
 		else if(master.get_digital(DIGITAL_R2))
 		{
-			intakeMotor.move(-127);
+			intakeMotor.move(127);
 			seperateMotor.move(-127);
 		}
 		//Nothing

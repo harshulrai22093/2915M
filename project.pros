@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "right side",
+    "project_name": "left side",
     "target": "v5",
     "templates": {
       "kernel": {
@@ -592,8 +592,8 @@
       }
     },
     "upload_options": {
-      "slot": 2,
-      "icon": "pizza"
+      "slot": 1,
+      "icon": "power"
     },
     "use_early_access": false
   }
