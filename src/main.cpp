@@ -1,231 +1,244 @@
 #include "main.h"
 
-//Defining electronics
+// Define controller 
 pros::Controller master(pros::E_CONTROLLER_MASTER);
-pros::MotorGroup left_mg({-3, -4, -5});    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
-pros::MotorGroup right_mg({8, 9, 10});  // Creates a motor group with forwards port 5 and reversed ports 4 & 6
-pros::Motor intakeMotor({6});
-pros::Motor seperateMotor({7});
+// Define left hand side drive motor group
+pros::MotorGroup left_mg({-3, -4, -5});
+// Define right hand side drive motor group
+pros::MotorGroup right_mg({8, 9, 10});
+// Define top intake motor 
+pros::Motor topintakemotor({6});
+// Define bottom intake motor
+pros::Motor bottomintakemotor({7});
+// Define intertial sensor
 pros::IMU inertial ({1});
+// Define colour sensor
 pros::Optical colour_sensor({2});
-
-//scraper 
+// Define mid goal pneumatic
 pros::adi::Pneumatics midgoaler('a', false);
-
-//scraper 
+// Define scraper pneumatic
 pros::adi::Pneumatics scraper('h', false);
 
+// Variables for position and orientation
 struct Pose {
-    double x;       // cm
-    double y;       // cm
-    double theta;   // radians
+	// cm
+    double x;
+	// cm
+    double y;
+	// radians
+    double theta;
 };
-
+// Reset robot orientation and position
 Pose robotPose = {0.0, 0.0, 0.0};
 
+// ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 void odometryTime();
-
-// odometry constants 
+// odometry constants ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 constexpr double WHEEL_DIAMETER_IN = 4.0;
 constexpr double WHEEL_DIAMETER_CM = WHEEL_DIAMETER_IN * 2.54;
 constexpr double EXTERNAL_GEAR_RATIO = 4.0/6.0; 
 constexpr double DEG_TO_REV = 1.0 / 360.0;
-
-// optional signs if your encoders come out inverted (keep at 1 unless needed) whatever this means ask harry later
+// optional signs if your encoders come out inverted (keep at 1 unless needed) whatever this means ask harry later ????????????????????????????????????????????????????????????????????????????
 constexpr double LEFT_SIGN = 1.0;
 constexpr double RIGHT_SIGN = 1.0;
 
-// Auto-Configure Filter Colour Variable
-enum FilterColour { RED, BLUE };
-FilterColour filtercolour = BLUE;
+// Variable for alliance colour, this colour represents what's in the preloader, defaulting to blue
+enum AllianceColour { RED, BLUE };
+AllianceColour alliancecolour = BLUE;
 
-// task handles so they can persist across modes
+// task handles so they can persist across modes ??????????????????????????????????????????????????????????????????????????????????
 pros::Task* gOdomTask = nullptr;
 
+// When the robot is intialized
 void initialize() {
+	// Reset and initialize interial sensor
 	inertial.reset();
 	while (inertial.is_calibrating()) {
 		pros::delay(10);
 	}
-
+	// ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 	if (!gOdomTask) {
 		gOdomTask = new pros::Task(odometryTime);
 	}
-
-	 // Enable Colour Sensor LED
+	// Enable colour sensor LED
     colour_sensor.set_led_pwm(100);
-
-	// Check what colour is in the preloader
-	int proximity = colour_sensor.get_proximity();
-	if (proximity > 150) {
-    int hue = colour_sensor.get_hue();
-    if (hue >= 200 && hue <= 240){
-        filtercolour = BLUE;
-    } else if (hue >= 0 && hue <= 20){
-        filtercolour = RED;
-    }
-}
+	// Set integration time to 5 ms
+    colour_sensor.set_integration_time(5);
 }
 
-//Colour sense
+// Colour sensing function depending on alliance colour 
 void coloursensefunction() {
-    int proximity = colour_sensor.get_proximity();
 
+	// Check if the block is close enoguh
+    int proximity = colour_sensor.get_proximity();
     if (proximity > 150) {
+
+		// Get block colour
         int hue = colour_sensor.get_hue();
 
-        if (filtercolour == RED) {
+		// If alliance colour red
+        if (alliancecolour == RED) {
+
             // Reject blue
-            if (hue >= 200 && hue <= 240)
-                intakeMotor.move(-127);
-            else
-                intakeMotor.move(0);
-        } 
-        else if (filtercolour == BLUE) {
+            if (hue >= 200 && hue <= 240) {
+                topintakemotor.move(-127);
+			
+			// Else do nothing	
+			} else {
+                topintakemotor.move(0);
+			}
+		// If alliance colour blue
+		} else if (alliancecolour == BLUE) {
+
             // Reject red
             if (hue >= 0 && hue <= 20)
-                intakeMotor.move(-127);
-            else
-                intakeMotor.move(0);
-        }
-    } 
-    else {
-        intakeMotor.move(0);
-    }
+                topintakemotor.move(-127);
+
+			// Else do nothing
+			} else {
+                topintakemotor.move(0);
+			}
+		
+		// Else do nothing
+    } else {
+    	topintakemotor.move(0);
+	}
 }
 
-// Loop the colour sensor for background task
-void coloursenseloop(){
-    while (true){
-        if(master.get_digital(DIGITAL_R1)) {  // only run sorter when R1 is held
-            coloursensefunction();
-        } else {
-            intakeMotor.move(0);
-            seperateMotor.move(0);
-        }
+// Loop the colour sensing function
+void coloursenseloop() {
+    while (true) {
+        coloursensefunction();
         pros::delay(10);
     }
 }
 
-//Drive distance with a pid controller
-void driveDistance(float distance, float maxSpeed = 127, float errorExit = 1, float timeoutMs = 5000)
-{
-	//Tuning constants
+// // Loop the colour sensor for background task
+// void coloursenseloop(){
+//     while (true){
+//         if(master.get_digital(DIGITAL_R1)) {  // only run sorter when R1 is held
+//             coloursensefunction();
+//         } else {
+//             topintakemotor.move(0);
+//             bottomintakemotor.move(0);
+//         }
+//         pros::delay(10);
+//     }
+// }
+
+// Drive distance with a pid controller
+void driveDistance(float distance, float maxSpeed = 127, float errorExit = 1, float timeoutMs = 5000) {
+	// Tuning constants
 	const float kP = 10;
 	const float kI = 0;
 	const float kD = 100;
 
-	//Pid variables
+	// PID variables
 	float lastError = distance; 
 	float integral = 0;
 
-	//Reset motor positions to 0
+	// Reset motor positions to 0
 	left_mg.tare_position_all();
 	right_mg.tare_position_all();
 
-	//Calculating exit time
+	// Calculating exit time
 	float endTime = pros::millis() + timeoutMs;
 
-	//Main loop
-	while(pros::millis() < endTime)
-	{
-		//Getting positions of motors
+	// Main loop
+	while(pros::millis() < endTime) {
+		// Getting positions of motors
 		std::vector<double> leftPositions = left_mg.get_position_all();
 		std::vector<double> rightPositions = right_mg.get_position_all();
 		float leftAvgPos = (leftPositions.at(0) + leftPositions.at(1) + leftPositions.at(2)) / 3;
 		float rightAvgPos = (rightPositions.at(0) + rightPositions.at(1) + rightPositions.at(2)) / 3;
 
-		//Calculating distance moved
+		// Calculating distance moved
 		float leftDistance = (M_PI * (4 * 2.54) * leftAvgPos * 4/6) / 360;
 		float rightDistance = (M_PI * (4 * 2.54) * rightAvgPos * 4/6) / 360;
 		float avgDistance = (leftDistance + rightDistance) / 2;
 
-		//Calculating error, integral, and derivative
+		// Calculating error, integral, and derivative
 		float error = distance - avgDistance;
 		integral += error;
 		float derivative = error - lastError;
 		
-		//Updating last error for next iteration
+		// Updating last error for next iteration
 		lastError = error;
 
-		//prints error to controller
+		// Prints error to controller
 		master.print(0, 0, "%f", error);
 
-		//Calculating output 
+		// Calculating output 
 		float output = (kP * error) + (kI * integral) + (kD * derivative);
 
 		output = std::clamp(output, -maxSpeed, maxSpeed);
 
-		//Moving motors 
+		// Moving motors 
 		left_mg.move(output);
 		right_mg.move(output);
 
-		//Exit conditions
-		if(fabs(error) < errorExit)
-		{
+		// Exit conditions
+		if(fabs(error) < errorExit) {
 			break;
 		}
 
-		//Running every 10 ms
+		// Running every 10 ms
 		pros::delay(10);
 	}
 	left_mg.move(0);
 	right_mg.move(0);
 }
 
-void turningTime(float targetRotation, float maxSpeed = 127, float errorExit = 1)
-{
-	//Tuning constants
+void turningTime(float targetRotation, float maxSpeed = 127, float errorExit = 1) {
+	// Tuning constants
 	const float kP = 3;
 	const float kI = 0;
 	const float kD = 18.5;
 
-	//Pid variables
+	// PID variables
 	float lastError = targetRotation; 
 	float integral = 0;
 
-	//Main loop
-	while(true)
-	{
-		//Getting rotation
+	// Main loop
+	while(true)	{
+		// Getting rotation
 		double currentRotation = inertial.get_rotation();
 
-		//Calculating error, intagral, and derivative
+		// Calculating error, intagral, and derivative
 		float error = targetRotation - currentRotation;
 		integral += error;
 		float derivative = error - lastError;
 		
-		//Updating last error for next iteration
+		// Updating last error for next iteration
 		lastError = error;
 
-		//prints error to controller
+		// Prints error to controller
 		master.print(0, 0, "%f", error);
 
-		//Calculating output 
+		// Calculating output 
 		float output = (kP * error) + (kI * integral) + (kD * derivative);
 
 		output = std::clamp(output, -maxSpeed, maxSpeed);
 
-		//Moving motors 
+		// Moving motors 
 		left_mg.move(output);
 		right_mg.move(-output);
 
-		//Exit conditions
-		if(fabs(error) < errorExit)
-		{
+		// Exit conditions
+		if(fabs(error) < errorExit) {
 			break;
 		}
 
-		//Running every 10 ms
+		// Running every 10 ms
 		pros::delay(10);
 	}
 	left_mg.move(0);
 	right_mg.move(0);
 }
 
-// odometry
+// Odometry
 void odometryTime() {
-	// zero encoders and heading reference
+	// Zero encoders and heading reference
 	left_mg.tare_position_all();
 	right_mg.tare_position_all();
 	inertial.tare_rotation();
@@ -235,14 +248,14 @@ void odometryTime() {
 	uint32_t lastPrint = 0;
 
 	while (true) {
-		// get motor positions (deg) and average per side
+		// Get motor positions (deg) and average per side
 		std::vector<double> leftPos = left_mg.get_position_all();
 		std::vector<double> rightPos = right_mg.get_position_all();
 
 		double leftAvgDeg = (leftPos.at(0) + leftPos.at(1) + leftPos.at(2)) / 3.0;
 		double rightAvgDeg = (rightPos.at(0) + rightPos.at(1) + rightPos.at(2)) / 3.0;
 
-		// convert motor degrees -> linear distance at the chassis center (cm)
+		// Convert motor degrees -> linear distance at the chassis center (cm)
 		double leftDist = LEFT_SIGN * (M_PI * WHEEL_DIAMETER_CM) * (leftAvgDeg * DEG_TO_REV) * EXTERNAL_GEAR_RATIO;
 		double rightDist = RIGHT_SIGN * (M_PI * WHEEL_DIAMETER_CM) * (rightAvgDeg * DEG_TO_REV) * EXTERNAL_GEAR_RATIO;
 
@@ -254,15 +267,15 @@ void odometryTime() {
 
 		double dCenter = (dLeft + dRight) / 2.0;
 
-		// heading from IMU (deg -> rad)
+		// Heading from IMU (deg -> rad)
 		double headingDeg = inertial.get_rotation();
 		robotPose.theta = headingDeg * M_PI / 180.0;
 
-		// integrate into field coordinates (x right, y forward in cm)
+		// Integrate into field coordinates (x right, y forward in cm)
 		robotPose.x += dCenter * sin(robotPose.theta);
 		robotPose.y += dCenter * cos(robotPose.theta);
 
-		// throttle prints to controller ~10 Hz
+		// Throttle prints to controller ~10 Hz
 		uint32_t now = pros::millis();
 		if (now - lastPrint >= 100) {
 			master.print(0, 0, "%.1f, %.1f", robotPose.x, robotPose.y);
@@ -273,7 +286,7 @@ void odometryTime() {
 	}
 }
 
-// boomerang drive
+// Boomerang drive
 void boomerang(double targetX, double targetY, double maxSpeed = 127) {
     // Tuning constants 
     const double kP_lin = 5.0; //cm   
@@ -310,45 +323,32 @@ void boomerang(double targetX, double targetY, double maxSpeed = 127) {
 
 
 // Autonomous, runs when auton runs
-void autonomous()
-{
+void autonomous() {
 
-	// LEFT SIDE
-	// driveDistance(100, 50, 2);
-	// intakeMotor.move(-127);
-	// seperateMotor.move(127); 
-	// pros::delay(100);
-	// driveDistance(-40, 500, 2);
-	// intakeMotor.move(0);
-	// seperateMotor.move(0);
-	// turningTime(-90, 50, 5);
-	// driveDistance(60, 50, 5);
-	// turningTime(-180, 50, 5);
-	// driveDistance(-40, 50, 5);
-	// intakeMotor.move(127);
-	// seperateMotor.move(-127);
+	// Check what colour is in the preloader
+	// Check distance, if it is near
+	int proximity = colour_sensor.get_proximity();
+	if (proximity > 150) {
+		
+		// Get Colour
+		int hue = colour_sensor.get_hue();
+		
+		// If blue detected make alliance colour blue
+		if (hue >= 200 && hue <= 240) {
+			alliancecolour = BLUE;
 
-	// RIGHT SIDE
-	// driveDistance(100, 50, 2);
-	// intakeMotor.move(-127);
-	// seperateMotor.move(127); 
-	// pros::delay(100);
-	// driveDistance(-40, 500, 2);
-	// intakeMotor.move(0);
-	// seperateMotor.move(0);
-	// turningTime(90, 50, 5);
-	// driveDistance(60, 50, 5);
-	// turningTime(180, 50, 5);
-	// driveDistance(-40, 50, 5);
-	// intakeMotor.move(127);
-	// seperateMotor.move(-127);
-	
+		// If red detected make allaince colour red
+		} else if (hue >= 0 && hue <= 20) {
+			alliancecolour = RED;
+
+		}
+	}
 }
 
 void opcontrol() {
 	int speed = 127;
-
-	// Background task to run the colour sensing loop
+	
+    // Background task to run the colour sensing loop
     pros::Task colourtask(coloursenseloop);
 
 	while (true) {
@@ -360,43 +360,34 @@ void opcontrol() {
 		right_mg.move(notLeft);                           // Sets right motor voltage                        
 
 		//top goal
-		if(master.get_digital(DIGITAL_L1))
-		{
-			seperateMotor.move(127);
+		if(master.get_digital(DIGITAL_L1)) {
+			bottomintakemotor.move(127);
 		}
 		//mid goal
-		else if(master.get_digital(DIGITAL_L2))
-		{
-			intakeMotor.move(127);
+		else if(master.get_digital(DIGITAL_L2)) {
+			topintakemotor.move(127);
 		}
 		//outtake
-		else if(master.get_digital(DIGITAL_R2))
-		{
-			intakeMotor.move(-127);
-			seperateMotor.move(-127);
+		else if(master.get_digital(DIGITAL_R2)) {
+			topintakemotor.move(-127);
+			bottomintakemotor.move(-127);
 		}
 		//Nothing
-		else
-		{
-			intakeMotor.move(0);
-			seperateMotor.move(0);
+		else {
+			topintakemotor.move(0);
+			bottomintakemotor.move(0);
 		}
 
-    	if(master.get_digital_new_press(DIGITAL_Y))
-		{
+    	if(master.get_digital_new_press(DIGITAL_Y)) {
 			midgoaler.toggle();
 		}
 
-		if(master.get_digital_new_press(DIGITAL_B))
-		{
+		if(master.get_digital_new_press(DIGITAL_B)) {
 			scraper.toggle();
 		}
-
-		}
-
-	pros::delay(10);						// Run for 10 ms then update
-		
-	
+	}
+	// Run for 10 ms then update
+	pros::delay(10);
 	}
 
 
