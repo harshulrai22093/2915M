@@ -1,11 +1,11 @@
-bin/main.cpp.o: src/main.cpp include/main.h include/api.h \
- include/pros/adi.h include/pros/ai_vision.h include/pros/colors.h \
- include/pros/device.h include/pros/distance.h include/pros/error.h \
- include/pros/ext_adi.h include/pros/adi.h include/pros/adi.h \
- include/pros/gps.h include/pros/imu.h include/pros/link.h \
- include/pros/llemu.h include/liblvgl/llemu.h include/liblvgl/lvgl.h \
- include/liblvgl/lv_version.h include/liblvgl/lvgl_private.h \
- include/liblvgl/core/lv_global.h \
+bin/main-DESKTOP-LKTO0N1.cpp.o: src/main-DESKTOP-LKTO0N1.cpp \
+ include/main.h include/api.h include/pros/adi.h include/pros/ai_vision.h \
+ include/pros/colors.h include/pros/device.h include/pros/distance.h \
+ include/pros/error.h include/pros/ext_adi.h include/pros/adi.h \
+ include/pros/adi.h include/pros/gps.h include/pros/imu.h \
+ include/pros/link.h include/pros/llemu.h include/liblvgl/llemu.h \
+ include/liblvgl/lvgl.h include/liblvgl/lv_version.h \
+ include/liblvgl/lvgl_private.h include/liblvgl/core/lv_global.h \
  include/liblvgl/core/../lv_conf_internal.h \
  include/liblvgl/core/../lv_conf_kconfig.h \
  include/liblvgl/core/../lv_conf.h \

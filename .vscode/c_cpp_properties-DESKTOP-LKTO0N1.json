@@ -4,8 +4,7 @@
       "name": "PROS Project",
       "includePath": [
         "${workspaceFolder}/**",
-        "c:\\Users\\Harshul\\OneDrive - Lynfield College\\Robotics 2915M\\drive\\include",
-        "c:\\Users\\varun\\OneDrive - Lynfield College\\Robotics 2915M\\drive\\include"
+        "c:\\Users\\Harshul\\OneDrive - Lynfield College\\Robotics 2915M\\drive\\include"
       ],
       "defines": [
         "_DEBUG",
